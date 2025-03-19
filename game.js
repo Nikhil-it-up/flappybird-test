@@ -47,6 +47,7 @@ function resizeCanvas() {
   // Start the game and resize the canvas initially
   resizeCanvas();
   
+
   
 
 // Bird Object
@@ -109,50 +110,67 @@ function Pipe() {
   };
 }
 
-// Game Loop
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Set a target FPS (frames per second)
+const FPS = 60;
+const interval = 1000 / FPS; // Calculate the interval between frames (in milliseconds)
+let lastTime = 0; // Track the last time the game was updated
 
-  // Draw the background image (if it's larger than the canvas, it will scroll)
-  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+// Game Loop with FPS control
+function gameLoop(timestamp) {
+  // Calculate elapsed time
+  const deltaTime = timestamp - lastTime;
+  
+  if (deltaTime >= interval) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw the background image (if it's larger than the canvas, it will scroll)
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    
+    if (gameOver) {
+      ctx.font = '35px Arial';
+      ctx.fillStyle = 'black';
+      ctx.fillText('Game Over!', canvas.width / 4, canvas.height / 2);
+      ctx.fillText('Score: ' + score, canvas.width / 3, canvas.height / 2 + 40);
+      return;
+    }
 
-  if (gameOver) {
-    ctx.font = '35px Arial';
+    bird.update();
+    
+    if (frame % SPAWN_RATE === 0) {
+      pipes.push(new Pipe());
+    }
+    
+    pipes.forEach(pipe => {
+      pipe.update();
+      if (pipe.collidesWith(bird)) {
+        gameOver = true;
+      }
+    });
+    
+    frame++;
+    
+    // Score Calculation
+    pipes.forEach(pipe => {
+      if (pipe.x + pipe.width < bird.x && !pipe.scored) {
+        score++;
+        pipe.scored = true;
+      }
+    });
+
+    ctx.font = '20px Arial';
     ctx.fillStyle = 'black';
-    ctx.fillText('Game Over!', canvas.width / 4, canvas.height / 2);
-    ctx.fillText('Score: ' + score, canvas.width / 3, canvas.height / 2 + 40);
-    return;
+    ctx.fillText('Score: ' + score, 10, 30);
+
+    // Update last time
+    lastTime = timestamp;
   }
 
-  bird.update();
-  
-  if (frame % SPAWN_RATE === 0) {
-    pipes.push(new Pipe());
-  }
-  
-  pipes.forEach(pipe => {
-    pipe.update();
-    if (pipe.collidesWith(bird)) {
-      gameOver = true;
-    }
-  });
-  
-  frame++;
-  
-  // Score Calculation
-  pipes.forEach(pipe => {
-    if (pipe.x + pipe.width < bird.x && !pipe.scored) {
-      score++;
-      pipe.scored = true;
-    }
-  });
-
-  ctx.font = '20px Arial';
-  ctx.fillStyle = 'black';
-  ctx.fillText('Score: ' + score, 10, 30);
-  
+  // Keep the game loop going by requesting the next frame
   requestAnimationFrame(gameLoop);
 }
+
+// Start the game loop
+requestAnimationFrame(gameLoop);
 
 // Event Listener for Flap
 window.addEventListener('keydown', (e) => {
