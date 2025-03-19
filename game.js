@@ -4,7 +4,6 @@ const ctx = canvas.getContext('2d');
 const GRAVITY = 0.6;
 const FLAP = -10;
 const SPAWN_RATE = 150; // Frames for pipe spawn rate
-let birdY = canvas.height / 2;
 let birdVelocity = 0;
 let birdFlap = false;
 let pipes = [];
@@ -14,64 +13,44 @@ let gameOver = false;
 
 // Preload images
 const birdImage = new Image();
-birdImage.src = 'bird.png'; // path to your bird image
+birdImage.src = 'bird.png';
 const pipeTopImage = new Image();
-pipeTopImage.src = 'pipe-top.png'; // Top pipe image
+pipeTopImage.src = 'pipe-top.png';
 const pipeBottomImage = new Image();
-pipeBottomImage.src = 'pipe-bottom.png'; // Bottom pipe image
+pipeBottomImage.src = 'pipe-bottom.png';
 const backgroundImage = new Image();
-backgroundImage.src = 'background.png'; // path to your background image
+backgroundImage.src = 'background.png';
 
-// Set canvas size to fullscreen
+// Set canvas size
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-  }
-  
-  // Event Listener for Window Resize
-  window.addEventListener('resize', () => {
-    resizeCanvas(); // Resize the canvas when the window size changes
-  });
-  
-  // Toggle Fullscreen function
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      canvas.requestFullscreen().catch(err => {
-        console.error("Error attempting to enable fullscreen mode:", err);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  }
-  
-  // Start the game and resize the canvas initially
-  resizeCanvas();
-  
-
-  
+}
 
 // Bird Object
 const bird = {
     width: 50,
     height: 50,
     x: 50,
-    y: birdY,
+    y: canvas.height / 2,
     draw() {
-      ctx.drawImage(birdImage, this.x, this.y, this.width, this.height);
+        ctx.drawImage(birdImage, this.x, this.y, this.width, this.height);
     },
     update() {
-      if (birdFlap && this.y > 0) {
-        birdVelocity = FLAP;
-        birdFlap = false;
-      }
-      birdVelocity += GRAVITY;
-      this.y += birdVelocity;
-      if (this.y + this.height > canvas.height) {
-        this.y = canvas.height - this.height;
-        birdVelocity = 0;
-        gameOver = true;
-      }
-      this.draw();
+        if (birdFlap) {
+            birdVelocity = FLAP;
+            birdFlap = false;
+        }
+        birdVelocity += GRAVITY;
+        this.y += birdVelocity;
+
+        if (this.y + this.height >= canvas.height) {
+            this.y = canvas.height - this.height;
+            birdVelocity = 0;
+            setTimeout(() => (gameOver = true), 200); // Small delay before game over
+        }
+
+        this.draw();
     }
 };
 
@@ -110,82 +89,113 @@ function Pipe() {
   };
 }
 
+// Game Loop
+
 // Set a target FPS (frames per second)
 const FPS = 60;
 const interval = 1000 / FPS; // Calculate the interval between frames (in milliseconds)
 let lastTime = 0; // Track the last time the game was updated
 
 // Game Loop with FPS control
-function gameLoop(timestamp) {
-  // Calculate elapsed time
-  const deltaTime = timestamp - lastTime;
-  
-  if (deltaTime >= interval) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw the background image (if it's larger than the canvas, it will scroll)
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-    
-    if (gameOver) {
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw background
+  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+  if (gameOver) {
       ctx.font = '35px Arial';
       ctx.fillStyle = 'black';
       ctx.fillText('Game Over!', canvas.width / 4, canvas.height / 2);
       ctx.fillText('Score: ' + score, canvas.width / 3, canvas.height / 2 + 40);
-      return;
-    }
 
-    bird.update();
-    
-    if (frame % SPAWN_RATE === 0) {
-      pipes.push(new Pipe());
-    }
-    
-    pipes.forEach(pipe => {
-      pipe.update();
-      if (pipe.collidesWith(bird)) {
-        gameOver = true;
-      }
-    });
-    
-    frame++;
-    
-    // Score Calculation
-    pipes.forEach(pipe => {
-      if (pipe.x + pipe.width < bird.x && !pipe.scored) {
-        score++;
-        pipe.scored = true;
-      }
-    });
-
-    ctx.font = '20px Arial';
-    ctx.fillStyle = 'black';
-    ctx.fillText('Score: ' + score, 10, 30);
-
-    // Update last time
-    lastTime = timestamp;
+      document.getElementById('restartBtn').style.display = 'inline-block'; // ✅ Show Restart button
+      return; // ✅ Stop game loop
   }
 
-  // Keep the game loop going by requesting the next frame
-  requestAnimationFrame(gameLoop);
+  bird.update();
+
+  if (frame % SPAWN_RATE === 0) {
+      pipes.push(new Pipe());
+  }
+
+  pipes.forEach(pipe => {
+      pipe.update();
+
+      // ✅ If collision happens, end game and show restart button
+      if (pipe.collidesWith(bird)) {
+          gameOver = true;
+          document.getElementById('restartBtn').style.display = 'inline-block'; // ✅ Show restart button on collision
+      }
+  });
+
+  frame++;
+
+  // Score Calculation
+  pipes.forEach(pipe => {
+      if (pipe.x + pipe.width < bird.x && !pipe.scored) {
+          score++;
+          pipe.scored = true;
+      }
+  });
+
+  ctx.font = '20px Arial';
+  ctx.fillStyle = 'black';
+  ctx.fillText('Score: ' + score, 10, 30);
+
+  if (!gameOver) {
+      requestAnimationFrame(gameLoop);
+  }
 }
 
-// Start the game loop
-requestAnimationFrame(gameLoop);
+// Start or Restart the game
+function startGame() {
+    bird.y = canvas.height / 2; // Reset bird position properly
+    birdVelocity = 0;
+    birdFlap = false;
+    pipes = [];
+    frame = 0;
+    score = 0;
+    gameOver = false;
 
-// Event Listener for Flap
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'none';
+
+    gameLoop();
+}
+
+// Restart Game
+
+function restartGame() {
+  console.log("Restarting game..."); // Debugging log
+  bird.y = canvas.height / 2;
+  birdVelocity = 0;
+  pipes = [];
+  frame = 0;
+  score = 0;
+  gameOver = false;
+
+  document.getElementById('restartBtn').style.display = 'none'; // ✅ Hide restart button
+  gameLoop(); // ✅ Restart the game loop
+}
+
+
+
+// Event Listeners
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'w') {
-    birdFlap = true;
-  }
+    if (e.key === 'w') {
+        birdFlap = true;
+    }
 });
-// Event Listener for Flap on mobile (touch)
+
 window.addEventListener('touchstart', (e) => {
-    // Prevent default to stop unwanted scrolling behavior on mobile
     e.preventDefault();
-    
-    // Trigger flap on touch
     birdFlap = true;
-  });
-  
-// Start the game
-gameLoop();
+});
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', restartGame);
+window.addEventListener('resize', resizeCanvas);
+
+// Initialize canvas size
+resizeCanvas();
