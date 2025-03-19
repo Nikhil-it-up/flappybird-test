@@ -1,17 +1,29 @@
 // Game Variables
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-let GRAVITY = 0.6;
-let FLAP = -10;
-let SPAWN_RATE = 150;
-let BASE_SPEED = 2;
+const GRAVITY = 0.6;
+const FLAP = -10;
+const SPAWN_RATE = 150; // Frames for pipe spawn rate
+const BASE_SPEED = 2; // Default speed
 let birdVelocity = 0;
 let birdFlap = false;
 let pipes = [];
 let frame = 0;
 let score = 0;
 let gameOver = false;
-let pipeSpeed = BASE_SPEED;
+let pipeSpeed = BASE_SPEED; // Dynamic speed
+
+function adjustForMobile() {
+  if (window.innerWidth < 768) {  // Mobile screens
+      GRAVITY = 0.4;
+      FLAP = -8;
+      pipeSpeed = 1.5;
+  } else {  // Desktop screens
+      GRAVITY = 0.6;
+      FLAP = -10;
+      pipeSpeed = BASE_SPEED;
+  }
+}
 
 // Preload images
 const birdImage = new Image();
@@ -23,24 +35,16 @@ pipeBottomImage.src = 'pipe-bottom.png';
 const backgroundImage = new Image();
 backgroundImage.src = 'background.png';
 
-// Adjust Speed & Gravity for Mobile
-function adjustForMobile() {
-    if (window.innerWidth < 768) {  // Mobile screens
-        GRAVITY = 0.4;  // Less gravity
-        FLAP = -8;      // Less flap power
-        pipeSpeed = 1.5; // Slower pipes
-    } else {  // Desktop screens
-        GRAVITY = 0.6;
-        FLAP = -10;
-        pipeSpeed = BASE_SPEED;
-    }
+// Adjust speed for mobile devices
+function adjustSpeed() {
+    pipeSpeed = window.innerWidth < 768 ? 1.2 : BASE_SPEED;
 }
 
-// Resize Canvas
+// Resize canvas
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    adjustForMobile();
+    adjustSpeed();
 }
 
 // Bird Object
@@ -85,14 +89,12 @@ function Pipe() {
     };
 
     this.update = function() {
-        this.x -= pipeSpeed;
+        this.x -=2;
         if (this.x + this.width < 0) {
             pipes.splice(pipes.indexOf(this), 1);
         }
         this.draw();
     };
-frame++;
-
 
     this.collidesWith = function(bird) {
         return (
@@ -130,6 +132,7 @@ function gameLoop() {
             document.getElementById('restartBtn').style.display = 'inline-block';
         }
     });
+    frame++;
 
     pipes.forEach(pipe => {
         if (pipe.x + pipe.width < bird.x && !pipe.scored) {
@@ -154,7 +157,7 @@ function startGame() {
     frame = 0;
     score = 0;
     gameOver = false;
-    adjustForMobile();
+    adjustSpeed();
 
     document.getElementById('startBtn').style.display = 'none';
     document.getElementById('restartBtn').style.display = 'none';
