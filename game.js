@@ -91,6 +91,8 @@ function Pipe() {
         }
         this.draw();
     };
+frame++;
+
 
     this.collidesWith = function(bird) {
         return (
