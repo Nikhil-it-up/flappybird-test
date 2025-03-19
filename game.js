@@ -15,9 +15,9 @@ let pipeSpeed = BASE_SPEED; // Dynamic speed
 
 function adjustForMobile() {
   if (window.innerWidth < 768) {  // Mobile screens
-      GRAVITY = 0.4;
-      FLAP = -8;
-      pipeSpeed = 1.5;
+      GRAVITY = 0.5;
+      FLAP = -10;
+      pipeSpeed = 1;
   } else {  // Desktop screens
       GRAVITY = 0.6;
       FLAP = -10;
