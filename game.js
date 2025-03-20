@@ -24,11 +24,15 @@ backgroundImage.src = 'background.png';
 
 // Adjust speed for mobile devices
 function getGravity() {
-    return window.innerWidth < 768 ? 0.6 : 0.6;
+    return window.innerWidth < 768 ? 0.3 : 0.6;  // Slower fall on mobile
 }
 
 function getFlap() {
-    return window.innerWidth < 768 ? -10 : -10;
+    return window.innerWidth < 768 ? -6 : -10;  // Weaker jump on mobile
+}
+
+function getPipeSpeed() {
+    return window.innerWidth < 768 ? 1 : 2;  // Slower pipes on mobile
 }
 
 // Resize canvas
@@ -53,14 +57,16 @@ const bird = {
         }
         birdVelocity += getGravity();
         this.y += birdVelocity;
-
+    
+        // If bird touches the ground, set game over and show restart button
         if (this.y + this.height >= canvas.height) {
             this.y = canvas.height - this.height;
             gameOver = true;
+            document.getElementById('restartBtn').style.display = 'inline-block'; // ✅ Fix
         }
-
+    
         this.draw();
-    }
+    }    
 };
 
 // Pipe Object
@@ -139,16 +145,18 @@ function gameLoop() {
     if (!gameOver) requestAnimationFrame(gameLoop);
 }
 
+
 // Start or Restart the Game
 function startGame() {
-    resizeCanvas();
-    bird.y = canvas.height / 2;
+    resizeCanvas(); 
+    bird.y = canvas.height / 2; 
     birdVelocity = 0;
     birdFlap = false;
     pipes = [];
     frame = 1;
     score = 0;
     gameOver = false;
+    pipeSpeed = getPipeSpeed();  // ✅ Set pipe speed based on screen size
 
     document.getElementById('startBtn').style.display = 'none';
     document.getElementById('restartBtn').style.display = 'none';
