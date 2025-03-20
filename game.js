@@ -30,15 +30,21 @@ function getGravity() {
 function getFlap() {
     return window.innerWidth < 768 ? -6 : -10;  // Weaker jump on mobile
 }
+function getSpawnRate() {
+    return window.innerWidth < 768 ? 180 : 150; // ✅ Slower pipe spawn on mobile
+}
 
 function getPipeSpeed() {
     return window.innerWidth < 768 ? 1 : 2;  // Slower pipes on mobile
 }
 
+
+
 // Resize canvas
+// Resize canvas dynamically for mobile & desktop
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth * 0.9;  // ✅ Adjusted to fit screen without overflow
+    canvas.height = window.innerHeight * 0.9;
 }
 
 // Bird Object
@@ -70,11 +76,12 @@ const bird = {
 };
 
 // Pipe Object
+// Pipe Object
 function Pipe() {
     this.x = canvas.width;
     this.width = 90;
     this.height = Math.floor(Math.random() * (canvas.height / 4)) + 50;
-    this.gap = 200;
+    this.gap = window.innerWidth < 768 ? 250 : 200;  // ✅ Bigger gap for mobile
     this.top = this.height;
     this.bottom = canvas.height - this.height - this.gap;
     this.scored = false;
@@ -85,7 +92,7 @@ function Pipe() {
     };
 
     this.update = function() {
-        this.x -= pipeSpeed;  
+        this.x -= pipeSpeed;  // ✅ Pipes now move properly
         if (this.x + this.width < 0) {
             pipes.splice(pipes.indexOf(this), 1);
         }
@@ -100,6 +107,7 @@ function Pipe() {
         );
     };
 }
+
 
 // Game Loop
 function gameLoop() {
@@ -117,9 +125,9 @@ function gameLoop() {
 
     bird.update();
 
-    if (frame % SPAWN_RATE === 0) {
+    if (frame % getSpawnRate() === 0) {
         pipes.push(new Pipe());
-    }
+    }    
 
     pipes.forEach(pipe => {
         pipe.update();
@@ -173,6 +181,12 @@ window.addEventListener('touchstart', (e) => {
     e.preventDefault();
     birdFlap = true;
 });
+
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    startGame();  // ✅ Restart game on resize to adjust elements
+});
+
 
 document.getElementById('startBtn').addEventListener('click', startGame);
 document.getElementById('restartBtn').addEventListener('click', startGame);
