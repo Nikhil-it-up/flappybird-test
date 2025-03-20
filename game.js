@@ -1,29 +1,16 @@
 // Game Variables
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const GRAVITY = 0.6;
-const FLAP = -10;
-const SPAWN_RATE = 150; // Frames for pipe spawn rate
-const BASE_SPEED = 2; // Default speed
+const SPAWN_RATE = 150; 
+const BASE_SPEED = 2; 
+
 let birdVelocity = 0;
 let birdFlap = false;
 let pipes = [];
 let frame = 0;
 let score = 0;
 let gameOver = false;
-let pipeSpeed = BASE_SPEED; // Dynamic speed
-
-function adjustForMobile() {
-  if (window.innerWidth < 768) {  // Mobile screens
-      GRAVITY = 0.6;
-      FLAP = -10;
-      pipeSpeed = 1;
-  } else {  // Desktop screens
-      GRAVITY = 0.6;
-      FLAP = -10;
-      pipeSpeed = BASE_SPEED;
-  }
-}
+let pipeSpeed = BASE_SPEED; 
 
 // Preload images
 const birdImage = new Image();
@@ -36,15 +23,18 @@ const backgroundImage = new Image();
 backgroundImage.src = 'background.png';
 
 // Adjust speed for mobile devices
-function adjustSpeed() {
-    pipeSpeed = window.innerWidth < 768 ? 1.2 : BASE_SPEED;
+function getGravity() {
+    return window.innerWidth < 768 ? 0.6 : 0.6;
+}
+
+function getFlap() {
+    return window.innerWidth < 768 ? -10 : -10;
 }
 
 // Resize canvas
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    adjustSpeed();
 }
 
 // Bird Object
@@ -58,10 +48,10 @@ const bird = {
     },
     update() {
         if (birdFlap) {
-            birdVelocity = FLAP;
+            birdVelocity = getFlap();
             birdFlap = false;
         }
-        birdVelocity += GRAVITY;
+        birdVelocity += getGravity();
         this.y += birdVelocity;
 
         if (this.y + this.height >= canvas.height) {
@@ -89,7 +79,7 @@ function Pipe() {
     };
 
     this.update = function() {
-        this.x -=2;
+        this.x -= pipeSpeed;  
         if (this.x + this.width < 0) {
             pipes.splice(pipes.indexOf(this), 1);
         }
@@ -132,7 +122,6 @@ function gameLoop() {
             document.getElementById('restartBtn').style.display = 'inline-block';
         }
     });
-    frame++;
 
     pipes.forEach(pipe => {
         if (pipe.x + pipe.width < bird.x && !pipe.scored) {
@@ -145,29 +134,26 @@ function gameLoop() {
     ctx.fillStyle = 'black';
     ctx.fillText('Score: ' + score, 10, 30);
 
+    frame++;
+
     if (!gameOver) requestAnimationFrame(gameLoop);
 }
 
 // Start or Restart the Game
 function startGame() {
+    resizeCanvas();
     bird.y = canvas.height / 2;
     birdVelocity = 0;
     birdFlap = false;
     pipes = [];
-    frame = 0;
+    frame = 1;
     score = 0;
     gameOver = false;
-    adjustSpeed();
 
     document.getElementById('startBtn').style.display = 'none';
     document.getElementById('restartBtn').style.display = 'none';
 
-    gameLoop();
-}
-
-// Restart Game
-function restartGame() {
-    startGame();
+    requestAnimationFrame(gameLoop);
 }
 
 // Event Listeners
@@ -181,8 +167,7 @@ window.addEventListener('touchstart', (e) => {
 });
 
 document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('restartBtn').addEventListener('click', restartGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
 window.addEventListener('resize', resizeCanvas);
 
-// Initialize
 resizeCanvas();
