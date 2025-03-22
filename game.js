@@ -31,11 +31,11 @@ function getFlap() {
     return window.innerWidth < 768 ? -5 : -10;  // Weaker jump on mobile
 }
 function getSpawnRate() {
-    return window.innerWidth < 768 ? 170 : 150; // ✅ Slower pipe spawn on mobile
+    return window.innerWidth < 768 ? 180 : 170; // ✅ Slower pipe spawn on mobile
 }
 
 function getPipeSpeed() {
-    return window.innerWidth < 768 ? 1 : 2;  // Slower pipes on mobile
+    return window.innerWidth < 768 ? 4: 4;  // Slower pipes on mobile
 }
 
 
@@ -76,25 +76,25 @@ const bird = {
 };
 
 // Pipe Object
-// Pipe Object
 function Pipe() {
     this.x = canvas.width;
     this.width = 90;
     this.height = Math.floor(Math.random() * (canvas.height / 4)) + 50;
-    this.gap = window.innerWidth < 768 ? 250 : 200;  // ✅ Bigger gap for mobile
+    this.gap = window.innerWidth < 768 ? 250 : 200;  // ✅ Increase gap on mobile
     this.top = this.height;
     this.bottom = canvas.height - this.height - this.gap;
     this.scored = false;
 
+    // ✅ Bind methods inside constructor
     this.draw = function() {
         ctx.drawImage(pipeTopImage, this.x, 0, this.width, this.top);
         ctx.drawImage(pipeBottomImage, this.x, canvas.height - this.bottom, this.width, this.bottom);
     };
 
     this.update = function() {
-        this.x -= pipeSpeed;  // ✅ Pipes now move properly
+        this.x -= pipeSpeed;  
         if (this.x + this.width < 0) {
-            pipes.splice(pipes.indexOf(this), 1);
+            pipes.splice(pipes.indexOf(this), 1);  // ✅ Correctly removes pipe
         }
         this.draw();
     };
@@ -107,6 +107,7 @@ function Pipe() {
         );
     };
 }
+
 
 
 // Game Loop
