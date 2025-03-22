@@ -31,11 +31,11 @@ function getFlap() {
     return window.innerWidth < 768 ? -5 : -10;  // Weaker jump on mobile
 }
 function getSpawnRate() {
-    return window.innerWidth < 768 ? 180 : 170; // ✅ Slower pipe spawn on mobile
+    return window.innerWidth < 768 ? 170 : 170; // ✅ Slower pipe spawn on mobile
 }
 
 function getPipeSpeed() {
-    return window.innerWidth < 768 ? 4: 4;  // Slower pipes on mobile
+    return window.innerWidth < 768 ? 3: 4;  // Slower pipes on mobile
 }
 
 
