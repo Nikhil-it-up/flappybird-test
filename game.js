@@ -24,18 +24,18 @@ backgroundImage.src = 'background.png';
 
 // Adjust speed for mobile devices
 function getGravity() {
-    return window.innerWidth < 768 ? 0.2 : 0.6;  // Slower fall on mobile
+    return window.innerWidth < 768 ? 0.3 : 0.6;  // Slower fall on mobile
 }
 
 function getFlap() {
     return window.innerWidth < 768 ? -5 : -10;  // Weaker jump on mobile
 }
 function getSpawnRate() {
-    return window.innerWidth < 768 ? 170 : 170; // ✅ Slower pipe spawn on mobile
+    return window.innerWidth < 768 ? 150 : 170; // ✅ Slower pipe spawn on mobile
 }
 
 function getPipeSpeed() {
-    return window.innerWidth < 768 ? 3: 4;  // Slower pipes on mobile
+    return window.innerWidth < 768 ? 3: 3;  // Slower pipes on mobile
 }
 
 
